@@ -4,10 +4,18 @@ import 'package:easy_color/src/services/shared_preferences_service.dart';
 import 'package:flutter/material.dart' show Color, Colors;
 
 class EasyColor {
+  /// singleton boilerplate
+  static final EasyColor _easyColor = EasyColor._internal();
+
+  factory EasyColor() {
+    return _easyColor;
+  }
+
+  EasyColor._internal();
+  /// singleton boilerplate
+
   final SharedPreferencesService _sharedPreferencesService = SharedPreferencesService();
   static final ColorRepository _repository = ColorRepository();
-
-  EasyColor();
 
   Future initialize() async {
     await _sharedPreferencesService.initialize();
