@@ -6,6 +6,8 @@ import 'package:flutter/material.dart'
     show Border, BoxDecoration, BoxShape, Color, Colors;
 
 class EasyColor {
+  EasyColor._();
+
   final ColorRepository _repository = ColorRepository();
 
   Future<Map?> getColorMap(colorNameStr) async {
