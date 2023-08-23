@@ -12,7 +12,7 @@ class ColorRepository extends RepMasterRepository {
           remote: ColorDataSourceRemote(),
         );
 
-  Future<Map?> getColorMap(String colorNameStr, {SourceType? source}) async {
+  Future<Map?> getColorMap(String colorNameStr, {SourceType? source, bool saveClosestColor = false}) async {
     // debugPrint('ProductRepository - getColorMap()...');
 
     Map<SourceType, Function> allSources = {
@@ -23,7 +23,7 @@ class ColorRepository extends RepMasterRepository {
     Map? result = await getAllItemsData(
         allSources: allSources,
         source: source,
-        param: colorNameStr,
+        param: {'colorNameStr': colorNameStr, 'saveClosestColor': saveClosestColor},
         singleResult: true,
         allowNull: true);
     return result;

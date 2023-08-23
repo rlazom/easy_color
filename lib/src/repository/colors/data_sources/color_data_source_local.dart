@@ -10,8 +10,9 @@ class ColorDataSourceLocal {
 
   ColorDataSourceLocal();
 
-  Future<Map?> getColorMap(String colorNameStr) async {
+  Future<Map?> getColorMap(Map params) async {
     debugPrint('ProductDataSourceLocal - getColorMap()...');
+    String colorNameStr = params['colorNameStr'];
 
     debugPrint('ProductDataSourceLocal - getColorMap() - translating color[AUTO] = "$colorNameStr" to color[EN]...');
     Translation translation = await GoogleTranslator().translate(colorNameStr, from: 'es', to: 'en');

@@ -13,8 +13,10 @@ class ColorDataSourceRemote {
 
   ColorDataSourceRemote();
 
-  Future<Map?> getColorMap (String colorNameStr) async {
+  Future<Map?> getColorMap (Map params) async {
     debugPrint('ColorDataSourceRemote - getColorMap()...');
+    String colorNameStr = params['colorNameStr'];
+    bool saveClosestColor = params['saveClosestColor'];
 
     debugPrint('ColorDataSourceRemote - getColorMap() - translating color[AUTO] = "$colorNameStr" to color[EN]...');
     Translation translation = await GoogleTranslator().translate(colorNameStr, from: 'es', to: 'en');
@@ -49,6 +51,7 @@ class ColorDataSourceRemote {
       // Set remoteColorNamesList = colors.map((e) => e['name']).toList().toSet();
       // debugPrint('remoteColorNamesList: "$remoteColorNamesList"');
 
+      var match;
       if(colors.isNotEmpty) {
         debugPrint('Getting colors in cache...');
         List<Map> sharedPrefColorList = shared.getAllColorMap();
@@ -68,32 +71,41 @@ class ColorDataSourceRemote {
           shared.setAllColorMap(json.encode(finalList));
           debugPrint('Saving new "${finalList.length}" colors to cache... DONE');
         }
-      }
-      var match = colors.firstWhereOrNull((e) => e['name'].toString().toLowerCase().trim() == colorName.toLowerCase().trim());
-      // var match = null;
 
-      if(match != null) {
-        colorMap = match;
-      } else {
-        // colorMap = colors.first;
+        match = colors.firstWhereOrNull((e) => e['name'].toString().toLowerCase().trim() == colorName.toLowerCase().trim());
 
-        String valueStr = colorName.toLowerCase().trim();
+        if(match != null) {
+          colorMap = match;
+          debugPrint('EXACT MATCH: TRUE');
+        } else {
+          // colorMap = colors.first;
 
-        List nameList = colors.map((e) => e['name'].toLowerCase().trim()).toList();
-        List<String> colorNameList = List<String>.from(nameList);
+          String valueStr = colorName.toLowerCase().trim();
 
-        debugPrint('findMostSimilarString() - value: "$valueStr" in LIST: [${colorNameList.length}]...');
-        String matchString = valueStr.findMostSimilarString(colorNameList);
-        debugPrint('matchString: "$matchString"');
+          List nameList = colors.map((e) => e['name'].toLowerCase().trim()).toList();
+          List<String> colorNameList = List<String>.from(nameList);
 
-        match = colors.firstWhereOrNull((e) => e['name'].toString().toLowerCase().trim() == matchString.toLowerCase().trim());
-        colorMap = match;
+          debugPrint('findMostSimilarString() - value: "$valueStr" in LIST: [${colorNameList.length}]...');
+          String matchString = valueStr.findMostSimilarString(colorNameList);
+          debugPrint('matchString: "$matchString"');
 
-        List allColorNames = finalList.map((e) => e['name'].toString().toLowerCase().trim()).toList();
-        if(!allColorNames.contains(valueStr)) {
-          Map newColor = Map<String, dynamic>.from(match);
-          newColor['name'] = valueStr;
-          shared.addColorMap(newColor);
+          match = colors.firstWhereOrNull((e) => e['name'].toString().toLowerCase().trim() == matchString.toLowerCase().trim());
+          colorMap = match;
+
+          List allColorNames = finalList.map((e) => e['name'].toString().toLowerCase().trim()).toList();
+          if(!allColorNames.contains(valueStr) && colorMap != null) {
+            debugPrint('EXACT MATCH: FALSE');
+            if(saveClosestColor) {
+              debugPrint('Saving Closest Color...');
+              debugPrint('Saving in cache valueStr: "$valueStr" with matchString: "$matchString" data');
+              Map newColor = Map<String, dynamic>.from(colorMap);
+              newColor['name'] = valueStr;
+              shared.addColorMap(newColor);
+              debugPrint('Saving Closest Color...DONE');
+            }
+          } else {
+            debugPrint('EXACT MATCH: TRUE');
+          }
         }
       }
     }
