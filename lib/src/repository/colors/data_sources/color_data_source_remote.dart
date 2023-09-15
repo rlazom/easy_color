@@ -51,27 +51,27 @@ class ColorDataSourceRemote {
       // Set remoteColorNamesList = colors.map((e) => e['name']).toList().toSet();
       // debugPrint('remoteColorNamesList: "$remoteColorNamesList"');
 
+      debugPrint('Getting colors in cache...');
+      List<Map> sharedPrefColorList = shared.getAllColorMap();
+      Set colorNamesList = sharedPrefColorList.map((e) => e['name']).toList().toSet();
+      debugPrint('Getting colors in cache... DONE - [${sharedPrefColorList.length}]');
+
+      List newColors = colors.isEmpty ? [] : colors.where((element) => !colorNamesList.contains(element['name'])).toList();
+      debugPrint('new colors: "${newColors.length}"');
+
+      if(newColors.isNotEmpty) {
+        debugPrint('Adding new "${newColors.length}" colors to cache list...');
+        sharedPrefColorList.addAll(List<Map>.from(newColors));
+
+        debugPrint('Saving "${newColors.length}" + cached "${colorNamesList.length}" colors to cache...');
+        // final finalList = sharedPrefColorList.map((map) => Map<String, dynamic>.from(map)).toList();
+        finalList = sharedPrefColorList.map((map) => Map<String, dynamic>.from(map)).toList();
+        shared.setAllColorMap(json.encode(finalList));
+        debugPrint('Saving new "${finalList.length}" colors to cache... DONE');
+      }
+
       var match;
-      if(colors.isNotEmpty) {
-        debugPrint('Getting colors in cache...');
-        List<Map> sharedPrefColorList = shared.getAllColorMap();
-        Set colorNamesList = sharedPrefColorList.map((e) => e['name']).toList().toSet();
-        debugPrint('Getting colors in cache... DONE - [${sharedPrefColorList.length}]');
-
-        List newColors = colors.where((element) => !colorNamesList.contains(element['name'])).toList();
-        debugPrint('new colors: "${newColors.length}"');
-
-        if(newColors.isNotEmpty) {
-          debugPrint('Adding new "${newColors.length}" colors to cache list...');
-          sharedPrefColorList.addAll(List<Map>.from(newColors));
-
-          debugPrint('Saving "${newColors.length}" + cached "${colorNamesList.length}" colors to cache...');
-          // final finalList = sharedPrefColorList.map((map) => Map<String, dynamic>.from(map)).toList();
-          finalList = sharedPrefColorList.map((map) => Map<String, dynamic>.from(map)).toList();
-          shared.setAllColorMap(json.encode(finalList));
-          debugPrint('Saving new "${finalList.length}" colors to cache... DONE');
-        }
-
+      // if(colors.isNotEmpty) {
         match = colors.firstWhereOrNull((e) => e['name'].toString().toLowerCase().trim() == colorName.toLowerCase().trim());
 
         if(match != null) {
@@ -79,18 +79,21 @@ class ColorDataSourceRemote {
           debugPrint('EXACT MATCH: TRUE');
         } else {
           // colorMap = colors.first;
+          debugPrint('EXACT MATCH: FALSE');
 
           String valueStr = colorName.toLowerCase().trim();
 
-          List nameList = colors.map((e) => e['name'].toLowerCase().trim()).toList();
+          List tColors = List.from(colors.isEmpty ? sharedPrefColorList : colors);
+          List nameList = tColors.map((e) => e['name'].toLowerCase().trim()).toList();
           List<String> colorNameList = List<String>.from(nameList);
 
           debugPrint('findMostSimilarString() - value: "$valueStr" in LIST: [${colorNameList.length}]...');
           String matchString = valueStr.findMostSimilarString(colorNameList);
           debugPrint('matchString: "$matchString"');
 
-          match = colors.firstWhereOrNull((e) => e['name'].toString().toLowerCase().trim() == matchString.toLowerCase().trim());
+          match = tColors.firstWhereOrNull((e) => e['name'].toString().toLowerCase().trim() == matchString.toLowerCase().trim());
           colorMap = match;
+          debugPrint('colorMap: "$colorMap"');
 
           List allColorNames = finalList.map((e) => e['name'].toString().toLowerCase().trim()).toList();
           if(!allColorNames.contains(valueStr) && colorMap != null) {
@@ -107,7 +110,7 @@ class ColorDataSourceRemote {
             debugPrint('EXACT MATCH: TRUE');
           }
         }
-      }
+      // }
     }
     return colorMap;
   }

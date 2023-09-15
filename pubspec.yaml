@@ -1,7 +1,5 @@
 name: easy_color
-description: A new Flutter package project.
-version: 0.0.1
-homepage:
+description: Get a color from the string name of the color you seek.
 
 environment:
   sdk: '>=3.0.6 <4.0.0'
@@ -11,7 +9,7 @@ dependencies:
   flutter:
     sdk: flutter
 
-  collection: 1.17.1
+  collection: ^1.17.2
   shared_preferences: ^2.1.1
   translator_plus: ^1.0.1
 
